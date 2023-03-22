@@ -1,6 +1,6 @@
 <?php
 
-require_once('vendor/autoload.php');
+require __DIR__ . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -55,6 +55,8 @@ foreach ($menu as $meal) {
     $name = $meal->beschreibung->__toString();
     $price = $meal->preis_g->__toString();
     $ingredient_array = $meal->labels->label;
+
+    if ($name === ".") continue;
 
     $diet = [];
     foreach ($ingredient_array as $ingredient) {
