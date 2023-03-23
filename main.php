@@ -1,5 +1,7 @@
 <?php
 
+use MensaNotifier\Menu;
+
 require __DIR__ . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -48,32 +50,12 @@ if (!$xml) {
     exit;
 }
 
-$menu = $xml->datum[0]->angebotnr;
-
-$rich_array = [];
-foreach ($menu as $meal) {
-    $name = $meal->beschreibung->__toString();
-    $price = $meal->preis_g->__toString();
-    $ingredient_array = $meal->labels->label;
-
-    if ($name === ".") continue;
-
-    $diet = [];
-    foreach ($ingredient_array as $ingredient) {
-        $diet[] = (string) $ingredient->attributes();
-    }
-
-    $rich_array[] = [
-        'name' => $name,
-        'price' => $price,
-        'diet' => $diet
-    ];
-}
+$menu = new Menu(json_decode(json_encode($xml))->datum[0]->angebotnr);
 
 $notification_body = '';
-foreach ($rich_array as $item) {
-    $diet = $item['diet'][0] ?? 'empty';
-    $diet_secondary = $item['diet'][1] ?? 'empty';
+foreach ($menu->meals as $item) {
+    $diet = $item->diet[0] ?? 'empty';
+    $diet_secondary = $item->diet[1] ?? 'empty';
     $diet_emoji = [
         'empty' => '',
         'vegan' => '🌿',
@@ -88,7 +70,7 @@ foreach ($rich_array as $item) {
         'Alkohol' => '🍸',
         'regional' => '🚜'
     ];
-    $notification_body .= "- " . $item['name'] . ", " . $item['price'] . "€" . " "; // Add meal info
+    $notification_body .= "- " . $item->name . ", " . $item->price . "€" . " "; // Add meal info
     $notification_body .= $diet_emoji[$diet] . $diet_emoji[$diet_secondary] . "\r\n\r\n"; // Add ingredient emojis
 }
 
